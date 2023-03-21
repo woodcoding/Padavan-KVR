@@ -11,7 +11,6 @@ start_instance() {
 	echo $cfg
 	port=""
 	args=""
-	networkid="$(nvram get zerotier_id)"
 	moonid="$(nvram get zerotier_moonid)"
 	secret="$(nvram get zerotier_secret)"
 	enablemoonserv="$(nvram get zerotiermoon_enable)"
@@ -64,12 +63,7 @@ start_instance() {
 		fi
 	fi
 
-
-	if [ -n "$networkid" ]; then
-		for id in ${networkid//,/ }; do
-			add_join $id
-		done
-	fi
+	add_join $(nvram get zerotier_id)
 
 	$PROG $args $config_path >/dev/null 2>&1 &
 
