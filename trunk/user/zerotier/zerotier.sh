@@ -5,24 +5,20 @@ PROG=/usr/bin/zerotier-one
 PROGCLI=/usr/bin/zerotier-cli
 PROGIDT=/usr/bin/zerotier-idtool
 config_path="/etc/storage/zerotier-one"
-PLANET="/etc/storage/zerotier-one/planet"
 start_instance() {
-	cfg="$1"
-	echo $cfg
 	port=""
 	args=""
+	nwid="$(nvram get zerotier_id)"
 	moonid="$(nvram get zerotier_moonid)"
 	secret="$(nvram get zerotier_secret)"
 	planet="$(nvram get zerotier_planet)"
-	if [ ! -d "$config_path" ]; then
-		mkdir -p $config_path
-	fi
 	mkdir -p $config_path/networks.d
+	mkdir -p $config_path/moons.d
 	if [ -n "$port" ]; then
 		args="$args -p$port"
 	fi
 	if [ -z "$secret" ]; then
-		logger -t "zerotier" "设备密匙为空,正在生成密匙,请稍后..."
+		logger -t "zerotier" "密匙为空,正在生成密匙,请稍后..."
 		sf="$config_path/identity.secret"
 		pf="$config_path/identity.public"
 		$PROGIDT generate "$sf" "$pf"  >/dev/null
@@ -31,55 +27,34 @@ start_instance() {
 		#rm "$sf"
 		nvram set zerotier_secret="$secret"
 		nvram commit
-	fi
-	if [ -n "$secret" ]; then
+	else
 		logger -t "zerotier" "找到密匙,正在写入文件,请稍后..."
 		echo "$secret" >$config_path/identity.secret
 		$PROGIDT getpublic $config_path/identity.secret >$config_path/identity.public
 		#rm -f $config_path/identity.public
 	fi
-
-	if [ -n "$planet"]; then
+	if [ -n "$planet" ]; then
 		logger -t "zerotier" "找到planet,正在写入文件,请稍后..."
-		echo "$planet" >$config_path/planet.tmp
-		base64 -d $config_path/planet.tmp >$config_path/planet
+		echo "$planet" | base64 -d  >$config_path/planet
 	fi
-
-	if [ -f "$PLANET" ]; then
-		if [ ! -s "$PLANET" ]; then
-			logger -t "zerotier" "自定义planet文件为空,删除..."
-			rm -f $config_path/planet
-			rm -f $PLANET
-			nvram set zerotier_planet=""
-			nvram commit
-		else
-			logger -t "zerotier" "自定义planet文件不为空,创建..."
-			planet="$(base64 $PLANET)"
-			cp -f $PLANET $config_path/planet
-			rm -f $PLANET
-			nvram set zerotier_planet="$planet"
-			nvram commit
-		fi
-	fi
-
-	add_join $(nvram get zerotier_id)
 
 	$PROG $args $config_path >/dev/null 2>&1 &
 
-	rules
-
+	while [ ! -f $config_path/zerotier-one.port ]; do
+		sleep 1
+	done
 	if [ -n "$moonid" ]; then
 		for id in ${moonid//,/ }; do
-			$PROGCLI -D$config_path orbit $id $id
+			$PROGCLI orbit $id $id
 			logger -t "zerotier" "orbit moonid $id ok!"
 		done
 	fi
+	if [ -n "$nwid" ]; then
+		$PROGCLI join $nwid
+		logger -t "zerotier" "join nwid $nwid ok!"
+		rules
+	fi
 }
-
-add_join() {
-		touch $config_path/networks.d/$1.conf
-}
-
 
 rules() {
 	while [ "$(ifconfig | grep zt | awk '{print $1}')" = "" ]; do
@@ -101,9 +76,7 @@ rules() {
 		iptables -t nat -A POSTROUTING -s $ip_segment -j MASQUERADE
 		zero_route "add"
 	fi
-
 }
-
 
 del_rules() {
 	zt0=$(ifconfig | grep zt | awk '{print $1}')
@@ -116,6 +89,7 @@ del_rules() {
 }
 
 zero_route(){
+	zt0=$(ifconfig | grep zt | awk '{print $1}')
 	rulesnum=`nvram get zero_staticnum_x`
 	for i in $(seq 1 $rulesnum)
 	do
@@ -126,7 +100,6 @@ zero_route(){
 		if [ "$1" = "add" ]; then
 			if [ $route_enable -ne 0 ]; then
 				ip route add $zero_ip via $zero_route dev $zt0
-				echo "$zt0"
 			fi
 		else
 			ip route del $zero_ip via $zero_route dev $zt0
@@ -143,7 +116,7 @@ start_zero() {
 kill_z() {
 	zerotier_process=$(pidof zerotier-one)
 	if [ -n "$zerotier_process" ]; then
-		logger -t "ZEROTIER" "关闭进程..."
+		logger -t "zerotier" "关闭进程..."
 		killall zerotier-one >/dev/null 2>&1
 		kill -9 "$zerotier_process" >/dev/null 2>&1
 	fi
