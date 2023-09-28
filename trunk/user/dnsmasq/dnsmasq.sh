@@ -20,7 +20,7 @@ sed -i '/filter-AAAA/d' $dnsmasq_Conf
 filter-AAAA
 EOF
 
-sed -i '/min-ttl/d' $dnsmasq_Conf
+sed -i '/min-cache-ttl/d' $dnsmasq_Conf
 cat >>$dnsmasq_Conf <<EOF
 min-cache-ttl=$min_ttl
 EOF
