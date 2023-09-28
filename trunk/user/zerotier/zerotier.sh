@@ -55,7 +55,7 @@ start_instance() {
 		logger -t "zerotier" "join nwid $nwid ok!"
 		rules
 	fi
- 	ln $config_path $old_config_path
+ 	# ln -s $config_path $old_config_path
 }
 
 rules() {
