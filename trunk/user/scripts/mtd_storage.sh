@@ -281,6 +281,8 @@ sync && echo 3 > /proc/sys/vm/drop_caches
 #wing 192.168.1.9:1080
 #ipset add gfwlist 8.8.4.4
 
+sysctl net.ipv4.tcp_tw_recycle=0
+sysctl net.ipv4.tcp_tw_reuse=0
 
 EOF
 		chmod 755 "$script_started"
