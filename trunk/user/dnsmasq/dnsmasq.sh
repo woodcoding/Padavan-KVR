@@ -1,9 +1,8 @@
 #!/bin/sh
 # 2.8.6
-storage_Path="/etc/storage"
-dnsmasq_Conf="$storage_Path/dnsmasq/dnsmasq.conf"
-filter_aaaa=$(nvram get dhcp_filter_aaa)
-min_ttl=$(nvram get dhcp_min_ttl)
+dnsmasq_Conf="/etc/storage/dnsmasq/dnsmasq.conf"
+filter_aaaa=`nvram get dhcp_filter_aaa`
+min_ttl=`nvram get dhcp_min_ttl`
 
 IPS4="$(ifconfig br0 | grep "inet addr" | grep -v ":127" | grep "Bcast" | awk '{print $2}' | awk -F : '{print $2}')"
 IPS6="$(ifconfig br0 | grep "inet6 addr" | grep -v "fe80::" | grep -v "::1" | grep "Global" | awk '{print $3}')"
