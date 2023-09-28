@@ -5,6 +5,7 @@ PROG=/usr/bin/zerotier-one
 PROGCLI=/usr/bin/zerotier-cli
 PROGIDT=/usr/bin/zerotier-idtool
 config_path="/etc/storage/zerotier-one"
+old_config_path="/var/lib/zerotier-one"
 start_instance() {
 	port=""
 	args=""
@@ -54,6 +55,7 @@ start_instance() {
 		logger -t "zerotier" "join nwid $nwid ok!"
 		rules
 	fi
+ 	ln $config_path $old_config_path
 }
 
 rules() {
