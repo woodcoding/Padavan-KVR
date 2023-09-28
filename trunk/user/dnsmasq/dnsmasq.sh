@@ -1,4 +1,5 @@
 #!/bin/sh
+# 2.8.6
 storage_Path="/etc/storage"
 dnsmasq_Conf="$storage_Path/dnsmasq/dnsmasq.conf"
 filter_aaaa=$(nvram get dhcp_filter_aaa)
