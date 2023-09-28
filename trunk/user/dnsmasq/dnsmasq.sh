@@ -22,5 +22,5 @@ EOF
 
 sed -i '/min-ttl/d' $dnsmasq_Conf
 cat >>$dnsmasq_Conf <<EOF
-min-ttl=$min_ttl
+min-cache-ttl=$min_ttl
 EOF
