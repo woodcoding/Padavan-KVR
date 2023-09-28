@@ -57,7 +57,7 @@ jobs:
         ######################################################################
         
         echo "CONFIG_FIRMWARE_INCLUDE_ZEROTIER=y" >> .config #zerotier ~1.3M
-        echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #SHADOWSOCKS 
+        # echo "CONFIG_FIRMWARE_INCLUDE_SHADOWSOCKS=y" >> .config #SHADOWSOCKS 
         echo "CONFIG_FIRMWARE_INCLUDE_XRAY=y" >> .config #集成xray执行文件，可以代替v2ray，大小5M多，如果闪存太小不够还是建议使用v2ray
         #echo "CONFIG_FIRMWARE_INCLUDE_V2RAY=n" >> .config
         echo "CONFIG_FIRMWARE_INCLUDE_TROJAN=y" >> .config #集成trojan执行文件，如果不集成，会从网上下载下来执行，不影响正常使用
